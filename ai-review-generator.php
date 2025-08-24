@@ -32,32 +32,35 @@ define('AI_REVIEW_GENERATOR_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
 // Autoloader
 spl_autoload_register(function ($class) {
-    if (strpos($class, 'AI_Review_Generator') !== 0) {
+    if (strpos($class, 'AI_Review_Generator_') !== 0) {
         return;
     }
 
     $prefix = 'AI_Review_Generator_';
     $base_dir = AI_REVIEW_GENERATOR_PLUGIN_DIR;
-    $relative_class = substr($class, strlen($prefix));
-    $parts = explode('_', $relative_class);
 
-    $dir_map = [
-        'Admin_Interface' => 'admin/class-admin-interface.php',
-        'Database_Manager' => 'database/class-manager.php',
-        'Scheduler' => 'cron/class-scheduler.php',
+    // Get the part of the class name after the prefix
+    $relative_class = str_replace($prefix, '', $class);
+
+    // Convert from snake_case (or CamelCase) to kebab-case for the filename
+    $file_path = str_replace('_', '-', strtolower($relative_class));
+
+    // Define the path mappings for special cases
+    $path_map = [
+        'admin-interface'  => 'admin/class-admin-interface.php',
+        'database-manager' => 'database/class-manager.php',
+        'scheduler'        => 'cron/class-scheduler.php',
     ];
 
-    $lookup = implode('_', $parts);
-    if (isset($dir_map[$lookup])) {
-        $file = $base_dir . $dir_map[$lookup];
+    if (isset($path_map[$file_path])) {
+        $file = $base_dir . $path_map[$file_path];
+    } else if (strpos($file_path, 'model-') === 0) {
+        // Handle models, e.g., model-openai-api -> models/class-openai-api.php
+        $model_file = str_replace('model-', '', $file_path);
+        $file = $base_dir . 'models/class-' . $model_file . '.php';
     } else {
-        $file_name = 'class-' . strtolower(implode('-', $parts)) . '.php';
-        $dir = 'includes';
-        if (strpos($lookup, 'Model') === 0) {
-            $dir = 'models';
-            $file_name = 'class-' . strtolower(str_replace('Model_', '', implode('-', $parts))) . '.php';
-        }
-        $file = $base_dir . $dir . '/' . $file_name;
+        // Default to includes directory for all other classes
+        $file = $base_dir . 'includes/class-' . $file_path . '.php';
     }
 
     if (file_exists($file)) {
@@ -110,7 +113,6 @@ class AI_Review_Generator {
      * Constructor
      */
     private function __construct() {
-        $this->include_dependencies();
         $this->init();
     }
     
@@ -168,19 +170,6 @@ class AI_Review_Generator {
         load_plugin_textdomain('ai-review-generator', false, dirname(plugin_basename(__FILE__)) . '/languages');
     }
     
-    /**
-     * Include required files
-     */
-    private function include_dependencies() {
-        require_once AI_REVIEW_GENERATOR_PLUGIN_DIR . 'includes/class-core.php';
-        require_once AI_REVIEW_GENERATOR_PLUGIN_DIR . 'includes/class-settings.php';
-        require_once AI_REVIEW_GENERATOR_PLUGIN_DIR . 'database/class-manager.php';
-        require_once AI_REVIEW_GENERATOR_PLUGIN_DIR . 'admin/class-admin-interface.php';
-        require_once AI_REVIEW_GENERATOR_PLUGIN_DIR . 'cron/class-scheduler.php';
-        require_once AI_REVIEW_GENERATOR_PLUGIN_DIR . 'includes/class-ai-manager.php';
-        require_once AI_REVIEW_GENERATOR_PLUGIN_DIR . 'includes/class-product-manager.php';
-        require_once AI_REVIEW_GENERATOR_PLUGIN_DIR . 'includes/class-review-generator.php';
-    }
 
     /**
      * Initialize plugin components
