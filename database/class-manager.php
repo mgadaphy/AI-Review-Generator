@@ -331,12 +331,6 @@ class AI_Review_Generator_Database_Manager {
     }
     
     /**
-     * Get product rotation data
-     */
-    /**
-     * Get all products for admin list table
-     */
-    /**
      * Get total count of products for pagination.
      */
     public function get_total_products_count($search = '') {
@@ -357,7 +351,7 @@ class AI_Review_Generator_Database_Manager {
     }
 
     /**
-     * Get all products for admin list table
+     * Get all products for admin list table.
      */
     public function get_all_products_for_admin($per_page, $offset, $search = '') {
         global $wpdb;
@@ -383,9 +377,6 @@ class AI_Review_Generator_Database_Manager {
     }
 
     /**
-     * Get product rotation data
-     */
-    /**
      * Get rotation data for a single product.
      */
     public function get_product_rotation_data($product_id) {
@@ -395,11 +386,7 @@ class AI_Review_Generator_Database_Manager {
     }
 
     /**
-     * Get product rotation data
-     */
-
-    /**
-     * Get product rotation data
+     * Get product rotation data.
      */
     public function get_product_rotation($limit = null, $exclude_reviewed_today = false) {
         global $wpdb;
@@ -430,7 +417,7 @@ class AI_Review_Generator_Database_Manager {
     }
     
     /**
-     * Log API usage
+     * Log API usage.
      */
     public function log_api_usage($data) {
         global $wpdb;
@@ -450,12 +437,6 @@ class AI_Review_Generator_Database_Manager {
     }
     
     /**
-     * Get analytics data
-     */
-    /**
-     * Get dashboard statistics
-     */
-    /**
      * Get total count of review history for pagination.
      */
     public function get_review_history_count() {
@@ -466,7 +447,7 @@ class AI_Review_Generator_Database_Manager {
     }
 
     /**
-     * Get all review history for admin list table
+     * Get all review history for admin list table.
      */
     public function get_review_history($per_page, $offset) {
         global $wpdb;
@@ -487,7 +468,7 @@ class AI_Review_Generator_Database_Manager {
     }
 
     /**
-     * Get dashboard statistics
+     * Get dashboard statistics.
      */
     public function get_dashboard_stats() {
         global $wpdb;
@@ -506,7 +487,7 @@ class AI_Review_Generator_Database_Manager {
     }
 
     /**
-     * Get analytics data
+     * Get analytics data.
      */
     public function get_analytics($date_from = null, $date_to = null) {
         global $wpdb;

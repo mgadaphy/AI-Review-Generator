@@ -313,11 +313,13 @@ class AI_Review_Generator {
 }
 
 /**
- * Initialize plugin
+ * Main instance of the plugin.
+ *
+ * @return AI_Review_Generator
  */
-function ai_review_generator_init() {
+function ai_review_generator() {
     return AI_Review_Generator::instance();
 }
 
 // Get the plugin running.
-add_action('plugins_loaded', 'ai_review_generator_init');
+add_action('plugins_loaded', 'ai_review_generator');
