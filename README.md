@@ -1,5 +1,7 @@
 # AI Review Generator for WooCommerce
 
+**A MOGADONKO AGENCY Project by Mo Gadaphy**
+
 Automatically generate realistic product reviews using AI models for your WooCommerce store. This plugin helps to build social proof and increase customer trust by populating your products with authentic-sounding reviews.
 
 ## Features
@@ -37,7 +39,7 @@ Automatically generate realistic product reviews using AI models for your WooCom
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a pull request or open an issue on the [GitHub repository](https://github.com/mgadaphy/AI-Review-Generator).
+We are actively looking for contributors! If you are interested in working on this project, please feel free to submit a pull request or open an issue on the [GitHub repository](https://github.com/mgadaphy/AI-Review-Generator) to get started.
 
 ## License
 
