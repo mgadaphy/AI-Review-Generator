@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
  * 
  * Provides the callback function for the WP-Cron event.
  */
-class AI_Review_Generator_Cron_Handler {
+class AI_Review_Generator_Scheduler {
 
     /**
      * The main function that runs when the cron event is triggered.

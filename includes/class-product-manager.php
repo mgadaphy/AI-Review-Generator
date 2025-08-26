@@ -114,10 +114,6 @@ class AI_Review_Generator_Product_Manager {
     }
 
     /**
-     * Calculate the priority score for a product.
-     * Higher score means higher priority for getting a review.
-     */
-    /**
      * Toggle the exclusion status of a product.
      */
     public function toggle_product_exclusion($product_id, $is_excluded) {

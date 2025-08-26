@@ -61,7 +61,7 @@ class AI_Review_Generator_Review_Generator {
         $params = $this->determine_review_parameters();
 
         // Add to queue
-        $queue_id = $this->db_manager->add_to_review_queue([
+        $queue_id = $this->db_manager->insert_review_queue([
             'product_id' => $product->get_id(),
             'status' => 'processing',
             'generation_params' => json_encode($params),
@@ -70,8 +70,8 @@ class AI_Review_Generator_Review_Generator {
         $review_content = $this->ai_manager->generate_review_content($product, $params);
 
         if (is_wp_error($review_content)) {
-            $this->db_manager->update_review_queue($queue_id, ['status' => 'failed']);
-            $this->db_manager->add_to_review_history([
+            $this->db_manager->update_queue_status($queue_id, 'failed', $review_content->get_error_message());
+            $this->db_manager->insert_review_history([
                 'product_id' => $product->get_id(),
                 'status' => 'error',
                 'error_message' => $review_content->get_error_message(),
@@ -95,10 +95,10 @@ class AI_Review_Generator_Review_Generator {
         }
 
         // Update queue and history
-        $this->db_manager->update_review_queue($queue_id, ['status' => 'completed']);
-        $this->db_manager->add_to_review_history([
+        $this->db_manager->update_queue_status($queue_id, 'completed');
+        $this->db_manager->insert_review_history([
             'product_id' => $product->get_id(),
-            'review_id' => $comment_id,
+            'wc_review_id' => $comment_id,
             'status' => 'success',
             'rating' => $params['rating'],
             'review_style' => $params['style'],
@@ -115,12 +115,21 @@ class AI_Review_Generator_Review_Generator {
      * Determine parameters for the next review based on settings.
      */
     private function determine_review_parameters() {
-        $rating_probabilities = $this->settings->get('rating_probabilities');
-        $style_probabilities = $this->settings->get('review_style_probabilities');
+        // Get min/max rating from settings
+        $min_rating = (int) $this->settings->get('min_rating', 3);
+        $max_rating = (int) $this->settings->get('max_rating', 5);
+        $rating = rand($min_rating, $max_rating);
+
+        // Get available styles from settings
+        $available_styles = $this->settings->get('review_styles', ['casual', 'detailed']);
+        if (empty($available_styles)) {
+            $available_styles = ['casual']; // Fallback
+        }
+        $style = $available_styles[array_rand($available_styles)];
 
         return [
-            'rating' => $this->get_weighted_random($rating_probabilities),
-            'style'  => $this->get_weighted_random($style_probabilities),
+            'rating' => $rating,
+            'style'  => $style,
         ];
     }
 
@@ -149,20 +158,4 @@ class AI_Review_Generator_Review_Generator {
         return $comment_id;
     }
 
-    /**
-     * Helper function to get a weighted random value.
-     */
-    private function get_weighted_random($weights) {
-        $total_weight = array_sum($weights);
-        $random_num = mt_rand(1, $total_weight);
-        $cumulative_weight = 0;
-
-        foreach ($weights as $key => $weight) {
-            $cumulative_weight += $weight;
-            if ($random_num <= $cumulative_weight) {
-                return $key;
-            }
-        }
-        return array_key_last($weights); // Fallback
-    }
 }

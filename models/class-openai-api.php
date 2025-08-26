@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
  * 
  * Communicates with the OpenAI API to generate reviews.
  */
-class AI_Review_Generator_OpenAI_API {
+class AI_Review_Generator_Model_OpenAI_Api {
 
     const API_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 

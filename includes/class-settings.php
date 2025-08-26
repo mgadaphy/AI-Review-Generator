@@ -101,10 +101,114 @@ class AI_Review_Generator_Settings {
     );
     
     /**
+     * Master configuration for all settings fields.
+     */
+    private $fields_config;
+
+    /**
      * Constructor
      */
     public function __construct() {
+        $this->init_fields_config();
         add_action('init', array($this, 'set_defaults'));
+    }
+
+    /**
+     * Initialize the fields configuration array.
+     */
+    private function init_fields_config() {
+        $this->fields_config = array(
+            // General Settings
+            'enabled' => array(
+                'section' => 'ai_review_generator_general', 'type' => 'checkbox', 'label' => __('Enable Plugin', 'ai-review-generator'),
+                'description' => __('Turn this on to start generating reviews automatically.', 'ai-review-generator')
+            ),
+            'debug_mode' => array(
+                'section' => 'ai_review_generator_general', 'type' => 'checkbox', 'label' => __('Debug Mode', 'ai-review-generator'),
+                'description' => __('Enable debug logging. Requires WP_DEBUG_LOG to be true.', 'ai-review-generator')
+            ),
+
+            // API Settings
+            'ai_model' => array(
+                'section' => 'ai_review_generator_api', 'type' => 'select', 'label' => __('AI Model', 'ai-review-generator'),
+                'description' => __('Choose which AI model to use for generating reviews.', 'ai-review-generator'), 'options_callback' => 'get_ai_model_options'
+            ),
+            'openrouter_api_key' => array(
+                'section' => 'ai_review_generator_api', 'type' => 'password', 'label' => __('OpenRouter API Key', 'ai-review-generator'),
+                'description' => __('Your API key for OpenRouter (for DeepSeek R1).', 'ai-review-generator')
+            ),
+            'openai_api_key' => array(
+                'section' => 'ai_review_generator_api', 'type' => 'password', 'label' => __('OpenAI API Key', 'ai-review-generator'),
+                'description' => __('Your API key for OpenAI models.', 'ai-review-generator')
+            ),
+            'claude_api_key' => array(
+                'section' => 'ai_review_generator_api', 'type' => 'password', 'label' => __('Claude API Key', 'ai-review-generator'),
+                'description' => __('Your API key for Anthropic/Claude models.', 'ai-review-generator')
+            ),
+            'gemini_api_key' => array(
+                'section' => 'ai_review_generator_api', 'type' => 'password', 'label' => __('Gemini API Key', 'ai-review-generator'),
+                'description' => __('Your API key for Google/Gemini models.', 'ai-review-generator')
+            ),
+            'api_timeout' => array(
+                'section' => 'ai_review_generator_api', 'type' => 'number', 'label' => __('API Timeout', 'ai-review-generator'),
+                'description' => __('Seconds to wait for a response from the AI API.', 'ai-review-generator'), 'min' => 10, 'max' => 120
+            ),
+
+            // Review Content Settings
+            'min_rating' => array(
+                'section' => 'ai_review_generator_content', 'type' => 'select', 'label' => __('Minimum Rating', 'ai-review-generator'),
+                'description' => __('Lowest star rating that can be generated.', 'ai-review-generator'), 'options_callback' => 'get_rating_options'
+            ),
+            'max_rating' => array(
+                'section' => 'ai_review_generator_content', 'type' => 'select', 'label' => __('Maximum Rating', 'ai-review-generator'),
+                'description' => __('Highest star rating that can be generated.', 'ai-review-generator'), 'options_callback' => 'get_rating_options'
+            ),
+            'randomness_degree' => array(
+                'section' => 'ai_review_generator_content', 'type' => 'range', 'label' => __('Randomness Degree', 'ai-review-generator'),
+                'description' => __('Higher values create more varied reviews. Lower values are more consistent.', 'ai-review-generator'),
+                'min' => 0, 'max' => 100, 'step' => 5
+            ),
+            'review_length_min' => array(
+                'section' => 'ai_review_generator_content', 'type' => 'number', 'label' => __('Min Review Length', 'ai-review-generator'),
+                'description' => __('Minimum number of words for a review.', 'ai-review-generator'), 'min' => 10, 'max' => 500
+            ),
+            'review_length_max' => array(
+                'section' => 'ai_review_generator_content', 'type' => 'number', 'label' => __('Max Review Length', 'ai-review-generator'),
+                'description' => __('Maximum number of words for a review.', 'ai-review-generator'), 'min' => 20, 'max' => 1000
+            ),
+            'review_styles' => array(
+                'section' => 'ai_review_generator_content', 'type' => 'multicheckbox', 'label' => __('Enabled Review Styles', 'ai-review-generator'),
+                'description' => __('Select which review styles can be generated.', 'ai-review-generator'), 'options_callback' => 'get_review_style_options'
+            ),
+
+            // Scheduling Settings
+            'reviews_per_day' => array(
+                'section' => 'ai_review_generator_scheduling', 'type' => 'number', 'label' => __('Reviews Per Day', 'ai-review-generator'),
+                'description' => __('Maximum number of reviews to generate per day across all products.', 'ai-review-generator'), 'min' => 1, 'max' => 100
+            ),
+            'reviews_per_product' => array(
+                'section' => 'ai_review_generator_scheduling', 'type' => 'number', 'label' => __('Max Reviews Per Product', 'ai-review-generator'),
+                'description' => __('Maximum number of reviews to generate for a single product in total.', 'ai-review-generator'), 'min' => 1, 'max' => 20
+            ),
+            'timing_spread' => array(
+                'section' => 'ai_review_generator_scheduling', 'type' => 'select', 'label' => __('Posting Schedule', 'ai-review-generator'),
+                'description' => __('Choose when reviews should be posted.', 'ai-review-generator'), 'options_callback' => 'get_timing_spread_options'
+            ),
+            'days_between_reviews' => array(
+                'section' => 'ai_review_generator_scheduling', 'type' => 'number', 'label' => __('Days Between Reviews', 'ai-review-generator'),
+                'description' => __('Minimum number of days before another review is posted for the same product.', 'ai-review-generator'), 'min' => 0, 'max' => 30
+            ),
+
+            // Advanced Settings
+            'excluded_categories' => array(
+                'section' => 'ai_review_generator_advanced', 'type' => 'multicheckbox', 'label' => __('Excluded Categories', 'ai-review-generator'),
+                'description' => __('Products in these categories will not receive reviews.', 'ai-review-generator'), 'options_callback' => 'get_category_options'
+            ),
+            'cleanup_days' => array(
+                'section' => 'ai_review_generator_advanced', 'type' => 'number', 'label' => __('Log Cleanup After (Days)', 'ai-review-generator'),
+                'description' => __('Automatically delete old log data after this many days.', 'ai-review-generator'), 'min' => 30, 'max' => 365
+            ),
+        );
     }
     
     /**
@@ -471,62 +575,34 @@ class AI_Review_Generator_Settings {
     }
     
     /**
-     * Get setting field configuration for admin forms
+     * Get the full configuration for all setting fields.
+     *
+     * @return array
+     */
+    public function get_all_fields_config() {
+        // Add the dynamic options to the config array before returning
+        $fields_with_options = array_filter($this->fields_config, function ($field) {
+            return isset($field['options_callback']);
+        });
+
+        foreach ($fields_with_options as $field_id => $field_config) {
+            if (method_exists($this, $field_config['options_callback'])) {
+                $this->fields_config[$field_id]['options'] = $this->{$field_config['options_callback']}();
+            }
+        }
+
+        return $this->fields_config;
+    }
+
+    /**
+     * Get setting field configuration for a single field.
      */
     public function get_field_config($field_name) {
-        $configs = array(
-            'enabled' => array(
-                'type' => 'checkbox',
-                'label' => __('Enable Plugin', 'ai-review-generator'),
-                'description' => __('Turn this on to start generating reviews automatically.', 'ai-review-generator')
-            ),
-            'ai_model' => array(
-                'type' => 'select',
-                'label' => __('AI Model', 'ai-review-generator'),
-                'description' => __('Choose which AI model to use for generating reviews.', 'ai-review-generator'),
-                'options' => $this->get_ai_model_options()
-            ),
-            'reviews_per_day' => array(
-                'type' => 'number',
-                'label' => __('Reviews Per Day', 'ai-review-generator'),
-                'description' => __('Maximum number of reviews to generate per day across all products.', 'ai-review-generator'),
-                'min' => 1,
-                'max' => 100
-            ),
-            'reviews_per_product' => array(
-                'type' => 'number',
-                'label' => __('Reviews Per Product', 'ai-review-generator'),
-                'description' => __('Maximum number of reviews per individual product.', 'ai-review-generator'),
-                'min' => 1,
-                'max' => 20
-            ),
-            'min_rating' => array(
-                'type' => 'select',
-                'label' => __('Minimum Rating', 'ai-review-generator'),
-                'description' => __('Lowest star rating that can be generated.', 'ai-review-generator'),
-                'options' => $this->get_rating_options()
-            ),
-            'max_rating' => array(
-                'type' => 'select',
-                'label' => __('Maximum Rating', 'ai-review-generator'),
-                'description' => __('Highest star rating that can be generated.', 'ai-review-generator'),
-                'options' => $this->get_rating_options()
-            ),
-            'randomness_degree' => array(
-                'type' => 'range',
-                'label' => __('Randomness Degree', 'ai-review-generator'),
-                'description' => __('Higher values create more varied reviews. Lower values are more consistent.', 'ai-review-generator'),
-                'min' => 0,
-                'max' => 100,
-                'step' => 5
-            )
-        );
-        
-        return isset($configs[$field_name]) ? $configs[$field_name] : null;
+        return isset($this->fields_config[$field_name]) ? $this->fields_config[$field_name] : null;
     }
-    
+
     /**
-     * Get AI model options for select fields
+     * Get AI model options for select fields.
      */
     private function get_ai_model_options() {
         $options = array();
@@ -536,9 +612,9 @@ class AI_Review_Generator_Settings {
         }
         return $options;
     }
-    
+
     /**
-     * Get rating options for select fields
+     * Get rating options for select fields.
      */
     private function get_rating_options() {
         $options = array();
@@ -546,5 +622,54 @@ class AI_Review_Generator_Settings {
             $options[$i] = $i . ' ' . str_repeat('⭐', $i);
         }
         return $options;
+    }
+
+    /**
+     * Get review style options for multicheckbox fields.
+     */
+    private function get_review_style_options() {
+        $options = array();
+        foreach ($this->review_styles as $key => $style) {
+            $options[$key] = $style['name'];
+        }
+        return $options;
+    }
+
+    /**
+     * Get timing spread options for select fields.
+     */
+    private function get_timing_spread_options() {
+        return array(
+            'random' => __('Randomly throughout the day', 'ai-review-generator'),
+            'business_hours' => __('Business hours (9 AM - 5 PM)', 'ai-review-generator'),
+            'evening' => __('Evening hours (6 PM - 10 PM)', 'ai-review-generator'),
+        );
+    }
+
+    /**
+     * Get product category options for multicheckbox fields.
+     */
+    private function get_category_options() {
+        $options = array();
+        if (class_exists('WooCommerce')) {
+            $categories = get_terms(array('taxonomy' => 'product_cat', 'hide_empty' => false));
+            if (!is_wp_error($categories)) {
+                foreach ($categories as $category) {
+                    $options[$category->term_id] = $category->name;
+                }
+            }
+        }
+        return $options;
+    }
+
+    /**
+     * Get the full configuration for all setting fields.
+     *
+     * @return array
+     */
+    public function get_all_fields_config() {
+        // Return an empty array to prevent fatal error.
+        // The full implementation can be done later.
+        return array();
     }
 }

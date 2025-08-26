@@ -70,11 +70,11 @@ class AI_Review_Generator_AI_Manager {
     private function get_api_handler($provider) {
         switch ($provider) {
             case 'OpenRouter':
-                return new AI_Review_Generator_OpenRouter_API();
+                return new AI_Review_Generator_Model_OpenRouter_Api();
             case 'OpenAI':
-                return new AI_Review_Generator_OpenAI_API();
+                return new AI_Review_Generator_Model_OpenAI_Api();
             case 'Anthropic':
-                return new AI_Review_Generator_Claude_API();
+                return new AI_Review_Generator_Model_Claude_Api();
             default:
                 return new WP_Error('api_error', 'Unsupported AI provider specified.');
         }

@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
  * 
  * Communicates with the Anthropic API to generate reviews.
  */
-class AI_Review_Generator_Claude_API {
+class AI_Review_Generator_Model_Claude_Api {
 
     const API_ENDPOINT = 'https://api.anthropic.com/v1/messages';
 

@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
  * 
  * Communicates with the OpenRouter.ai API to generate reviews.
  */
-class AI_Review_Generator_OpenRouter_API {
+class AI_Review_Generator_Model_OpenRouter_Api {
 
     const API_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 
